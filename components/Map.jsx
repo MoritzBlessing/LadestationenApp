@@ -3,6 +3,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { Text, View, StyleSheet, ActivityIndicator, Button } from 'react-native';
 import * as Location from 'expo-location';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { API_KEY_GOOGLEPLACES, API_KEY_OPENCHARGE } from '@/constants/Api-Keys';
 
 
 export default function Map(props) {
@@ -38,7 +39,7 @@ export default function Map(props) {
   }, [props.radius,location]);
 
   const fetchMarkers = async (radius) => {
-    const API_KEY = "9f052d84-d9dc-407b-ac4f-b0749b78f59f";
+    const API_KEY = API_KEY_OPENCHARGE;
     const apiUrl = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${location.coords.latitude}&longitude=${location.coords.longitude}&distance=${radius}&key=${API_KEY}`;
     try {
       const response = await fetch(apiUrl);
@@ -92,7 +93,7 @@ export default function Map(props) {
           handleSearchResult(details);
         }}
         query={{
-          key: 'AIzaSyCk6iYmH4ca9rDhjYOLTWjKnP4_7cEF-R8',
+          key: API_KEY_GOOGLEPLACES,
           language: 'de',
         }}
         onFail={error => console.log(error)}
