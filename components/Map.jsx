@@ -7,40 +7,47 @@ import { API_KEY_GOOGLEPLACES, API_KEY_OPENCHARGE } from '@/constants/Api-Keys';
 
 
 export default function Map(props) {
+
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [markers, setMarkers] = useState([]); // Added state for 
+  const [markers, setMarkers] = useState([]); 
   const mapRef = useRef(null);
 
-  useEffect(() => {
+  
+  useEffect(() => { // Get the current location of the user when the component is mounted
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
         return;
-      }
-
+      } 
       let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
+      setLocation(location); 
     })();
   }, []);
+
+
 
   useEffect(() => {
     if (location) {
       fetchMarkers(props.radius);
-      mapRef.current.animateToRegion({
+
+      mapRef.current.animateToRegion({ // Animate to the new location
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-        latitudeDelta: 0.04*props.radius,
+        latitudeDelta: 0.04*props.radius, // Adjust the zoom level based on the radius
         longitudeDelta: 0.025*props.radius,
       }, 1500);
     }
 
-  }, [props.radius,location]);
+  }, [props.radius,location]); // When the radius or location changes, fetch new markers
+
+
 
   const fetchMarkers = async (radius) => {
     const API_KEY = API_KEY_OPENCHARGE;
-    const apiUrl = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${location.coords.latitude}&longitude=${location.coords.longitude}&distance=${radius}&key=${API_KEY}`;
+    const apiUrl = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${location.coords.latitude}
+                    &longitude=${location.coords.longitude}&distance=${radius}&key=${API_KEY}`;
     try {
       const response = await fetch(apiUrl);
       const data = await response.json();
@@ -50,7 +57,8 @@ export default function Map(props) {
     }
   };
 
-  const handleSearchResult = (details) => {
+  //When a search result in the Google Places Autocomplete is clicked, set the location to the selected location
+  const handleSearchResult = (details) => { 
     if (details && details.geometry && details.geometry.location) {
       const { lat, lng } = details.geometry.location;
       setLocation({
@@ -65,7 +73,7 @@ export default function Map(props) {
   let latitude;
   let longitude;
 
-  if (errorMsg) {
+  if (errorMsg) { // If there is an error, display the error message
     return (
       <View style={styles.container}>
         <Text>{errorMsg}</Text>
@@ -76,7 +84,7 @@ export default function Map(props) {
     longitude = location.coords.longitude;
   }
 
-  if (!location) {
+  if (!location) { // If the location is not yet fetched, display a loading indicator
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -110,8 +118,9 @@ export default function Map(props) {
           longitudeDelta: 0.0421,
         }}
       >
-        {markers.map((marker, index) => {
+        {markers.map((marker, index) => { // Map over the markers and create a Marker component for each one
           const connections = marker.Connections || [];
+           // Display the power of each charger if available
           const description = connections.length > 0
             ? connections.map((conn, i) => `Charger ${i + 1}: ${conn.PowerKW ? `${conn.PowerKW} kW` : "No power info available"}`).join('\n')
             : "No chargers available";
